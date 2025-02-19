@@ -15,19 +15,12 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 find_package(nlohmann_json REQUIRED)
 find_package(sfml REQUIRED)
+find_package(imgui REQUIRED)
 
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
-# target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra -Werror -Wpedantic)
-# add_custom_target(
-#     clang-format
-#     COMMAND clang-format
-#     --dry-run
-#     -Werror
-#     ${SOURCES}
-#     ${HEADERS}
-# )
+add_subdirectory(src/deps/imgui)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml imgui::imgui sfmlimgui)
