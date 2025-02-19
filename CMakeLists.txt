@@ -14,6 +14,7 @@ include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 find_package(nlohmann_json REQUIRED)
+find_package(sfml REQUIRED)
 
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
@@ -29,4 +30,4 @@ set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 #     ${HEADERS}
 # )
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml)

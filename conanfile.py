@@ -5,6 +5,7 @@ class ImGuiConan(ConanFile):
     version = "1.0"
     settings = "os", "compiler", "build_type"
     requires = [
-        "nlohmann_json/3.11.3"
+        "nlohmann_json/3.11.3",
+        "sfml/2.6.2"
     ]
     generators = "CMakeDeps", "CMakeToolchain"
