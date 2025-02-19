@@ -5,3 +5,6 @@ init:
 
 r:
 	cmake --build ./build && ./build/$(TARGET)
+
+conan:
+	conan install . --output-folder=build --build=missing -s compiler.libcxx=libstdc++11
