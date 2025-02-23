@@ -1,4 +1,4 @@
-#include "sfml.hpp"
+#include "imgui-sfml.hpp"
 #include "imgui.h"
 
 #include <SFML/Config.hpp>
