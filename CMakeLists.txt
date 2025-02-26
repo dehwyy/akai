@@ -7,8 +7,16 @@ project(CSProject)
 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
 )
 
+set(HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.hpp
+)
 
 include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
