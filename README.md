@@ -1,17 +1,21 @@
-## Computer Science Project 2 semester.
+# Akai
 
-## Building
-```sh
-mkdir build
-cd build && cmake ..  # init CMake
 
-cmake --build build   # build
-./build/<output.file> # run
-```
-Or with `make`:y
+## Functions' graphic visualizer
+
+### Requirements:
+
+- [Conan](https://conan.io)
+- CMake
+- Any C++ compiler
+
+### Building
 ```sh
-make init # Init CMake
-make r    # Rebuild and Run
+mkdir build                                                                           #
+conan install . --output-folder=build --build=missing -s compiler.libcxx=libstdc++11  # install conan deps
+cd build && cmake ..                                                                  # init CMake
+cmake --build build                                                                   # build
+./build/<output.file>                                                                 # run app
 ```
 
 ## Resources
