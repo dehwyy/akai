@@ -14,6 +14,9 @@ set(SOURCES
 
 set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/parser.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/variable.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.hpp
 )
