@@ -66,7 +66,7 @@ void App::Start() {
         window->clear(sf::Color::Transparent);
 
         // UI
-        UI::Render();
+        UI::Render(*window, state);
 
         ImGui::SFML::Render(*window);
         window->display();
