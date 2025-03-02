@@ -23,19 +23,19 @@ namespace function {
             virtual double GetValue(variable::Variables& variables) const { return 0; };
     };
 
-    class Cos : public Function {
-        public:
-            double GetValue(variable::Variables& variables) const override {
-                return std::cos(this->GetValue(variables));
-            }
-    };
+    // class Cos : public Function {
+    //     public:
+    //         double GetValue(variable::Variables& variables) const override {
+    //             return std::cos(this->GetValue(variables));
+    //         }
+    // };
 
-    class Power : public Function {
-        public:
-            double GetValue(variable::Variables& variables) const override {
-                return std::pow(this->GetValue(variables), this->GetValue(variables));  // ?
-            }
-    };
+    // class Power : public Function {
+    //     public:
+    //         double GetValue(variable::Variables& variables) const override {
+    //             return std::pow(this->GetValue(variables), this->GetValue(variables));  // ?
+    //         }
+    // };
 
     class Operation : public Function {
         private:
@@ -45,7 +45,9 @@ namespace function {
 
         public:
             Operation(char op, Box<Function> lhs, Box<Function> rhs)
-                : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+                : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {
+                // TODO: merge dependant variables
+            }
 
             double GetValue(variable::Variables& variables) const override {
                 auto l = this->lhs.get()->GetValue(variables);
@@ -66,9 +68,13 @@ namespace function {
     };
 
     /// @brief Only "f(x) = x"
-    class Linear : public Function {
+    class LinearVariable : public Function {
         public:
-            Linear(std::string var) { this->dependantVariables.insert(var); }
+            LinearVariable(std::string var) { this->dependantVariables.insert(var); }
+            LinearVariable(char var) {
+                std::cout << "this call" << std::endl;
+                this->dependantVariables.insert(std::string(1, var));
+            }
 
             double GetValue(variable::Variables& variables) const override {
                 return variables.GetVariable(*this->dependantVariables.begin());
