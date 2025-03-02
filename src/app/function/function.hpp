@@ -20,7 +20,7 @@ namespace function {
             std::set<std::string> GetDependantVariables() const { return dependantVariables; }
 
             virtual ~Function() = default;
-            virtual double GetValue(variable::Variables& variables) const { return 0; };
+            virtual double GetValue(variable::Variables& variables) const { return 1; };
     };
 
     // class Cos : public Function {
@@ -62,7 +62,7 @@ namespace function {
                     case '/':
                         return l / r;
                     default:
-                        return 0;
+                        return 1;
                 }
             }
     };
