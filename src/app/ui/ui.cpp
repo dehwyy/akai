@@ -22,6 +22,7 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
     static float k = 1;
     static float speed = 1;
     static char functionInput[256];
+
     static variable::Variables vars;
 
     if (ImGui::TreeNode("Function")) {
@@ -39,8 +40,8 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
     // std::cout << "k = " << k << std::endl;
     sf::VertexArray graph(sf::LineStrip);
 
-    auto f = parser::Parser::Parse(state.GetFunctionInput());
-    vars.SetVariable("x", k);
+    auto f = parser::Parser::ParseString(state.GetFunctionInput());
+    vars.SetVariable("z", k);
 
     if (f.has_value()) {
         for (float x = -8.0; x <= 8.0; x += 0.1) {
