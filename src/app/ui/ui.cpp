@@ -19,7 +19,7 @@ namespace {
 
 void UI::Render(sf::RenderWindow& window, state::State& state) {
     ImGui::Begin("Settings");
-    static float k = 1;
+    static float z = 1;
     static float speed = 1;
     static char functionInput[256];
 
@@ -29,7 +29,7 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
         if (ImGui::InputText("Input", functionInput, 256)) {
             state.SetFunctionInput(functionInput);
         }
-        ImGui::SliderFloat("x", &k, 0.01, 3.0);
+        ImGui::SliderFloat("z", &z, 0.01, 3.0);
         ImGui::SliderFloat("Speed", &speed, 0.1, 10.0);
 
         ImGui::TreePop();
@@ -41,16 +41,20 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
     sf::VertexArray graph(sf::LineStrip);
 
     auto f = parser::Parser::ParseString(state.GetFunctionInput());
-    vars.SetVariable("z", k);
+    vars.SetVariable("z", z);
 
     if (f.has_value()) {
-        for (float x = -8.0; x <= 8.0; x += 0.1) {
+        for (int x = -WIDTH / 2; x <= WIDTH / 2; ++x) {
+            vars.SetVariable("x", (double)x);
             float y = f->get()->GetValue(vars);
-            // float y = std::sin(x);  // Функция
+            std::cout << "Y = " << y << std::endl;
+
+            float pixelX = WIDTH / 2 + x;
+            float pixelY = HEIGHT / 2 - y;
 
             // Преобразование координат в пиксели
-            float pixelX = WIDTH / 2 + x * SCALE_X * k;
-            float pixelY = HEIGHT / 2 - y * SCALE_Y;
+            // float pixelX = WIDTH / 2 + x * SCALE_X * z;
+            // float pixelY = HEIGHT / 2 - y * SCALE_Y;
 
             graph.append(sf::Vertex(sf::Vector2f(pixelX, pixelY), sf::Color::Magenta));
         }

@@ -154,7 +154,8 @@ namespace parser {
             static std::optional<Box<function::Function>> Parse(Token* token) {
                 std::optional<Box<function::Function>> lhs = std::nullopt;
 
-                while (token->next.has_value()) {
+                std::cout << "Before while" << std::endl;
+                while (token && token->type.has_value()) {
                     switch (token->type.value()) {
                         case TokenType::Consant:
                             lhs = NewBox<function::Constant>(token->AsConstant());
@@ -165,15 +166,25 @@ namespace parser {
                             break;
 
                         case TokenType::Operation: {
+                            std::cout << "TokenType == Operation" << std::endl;
+                            if (!token->next.has_value()) {
+                                std::cout << "No value" << std::endl;
+                                return lhs;
+                            }
+
                             if (!lhs.has_value()) {
+                                std::cout << "lhs doesn't contain value" << std::endl;
                                 lhs = NewBox<function::Constant>(1.);
                             }
+
                             char op = token->AsOperation();
+
                             token = token->next->get();
-                            std::cout << "Before parsing rhs" << std::endl;
+                            std::cout << "Got Token ptr" << std::endl;
+
                             // TODO: handle std::optional = None
                             lhs = NewBox<function::Operation>(
-                                token->AsOperation(),
+                                op,
                                 std::move(lhs.value()),
                                 Parse(token).value_or(NewBox<function::Constant>(1.)));
 
@@ -187,14 +198,12 @@ namespace parser {
                             lhs = *Parse(token->AsNestedToken());
                     }
 
-                    std::cout << "111" << std::endl;
-                    token = token->next->get();
-                    if (!token) {
-                        std::cout << "!" << std::endl;
+                    std::cout << "Next? " << token->next.has_value() << std::endl;
+                    if (!token->next.has_value()) {
                         return lhs;
                     }
-                    std::cout << "222 " << token << std::endl;
-                    std::cout << "333 " << token->next.has_value() << std::endl;
+
+                    token = token->next->get();
                 }
 
                 return lhs;
