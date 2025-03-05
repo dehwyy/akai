@@ -11,3 +11,8 @@ Box<T> NewBox(Args&&... args) {
 
 template <typename T>
 using Rc = std::shared_ptr<T>;
+
+template <typename T, typename... Args>
+Rc<T> NewRc(Args&&... args) {
+    return std::make_shared<T>(std::forward<Args>(args)...);
+}
