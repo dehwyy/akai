@@ -1,12 +1,24 @@
 #pragma once
 
-#include <optional>
 #include <string>
 #include <vector>
-#include "../../global/types.hpp"
 #include "function.hpp"
+#include "lib/prelude.hpp"
 
 namespace {
+    class StringParsing {
+        public:
+            static std::string ParseString(std::string input, int& pos) {
+                std::string result = "";
+                while (pos < input.length() && input.at(pos) != '"') {
+                    result += input.at(pos);
+                    ++pos;
+                }
+                ++pos;
+                return result;
+            }
+    };
+
     /// @returns `true` if EndOfString was reached.
     bool toNextNonSpace(std::string input, int& pos) {
         while (pos < input.length() && std::isspace(input.at(pos))) {
@@ -35,7 +47,9 @@ namespace parser {
         private:
             static bool IsDigit(char c) { return std::isdigit(c) || c == '.'; }
             static bool IsAlpha(char c) { return std::isalpha(c); }
-            static bool IsOperation(char c) { return c == '+' || c == '-' || c == '*' || c == '/'; }
+            static bool IsOperation(char c) {
+                return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
+            }
             static bool IsNestedTokenStart(char c) { return c == '('; }
             static bool IsNestedTokenEnd(char c) { return c == ')'; }
 
@@ -45,42 +59,38 @@ namespace parser {
                     ++pos;
                 }
 
-                // std::cout << "ParseConstant: " << input.substr(initialPos, pos - initialPos)
-                //           << std::endl;
-                double k = std::stod(input.substr(initialPos, pos++ - initialPos));
-                std::cout << "Parsed K = " << k << std::endl;
-                return k;
+                return std::stod(input.substr(initialPos, pos++ - initialPos));
             }
-            static void RemoveNullTokens(Token* currToken) {
-                while (currToken->next.has_value()) {
-                    Box<Token> notNullToken = std::move(currToken->next.value());
-                    // To 1st non-null-token
-                    // While next token is null-token
-                    while (!notNullToken->type.has_value()) {
-                        // If `next` doesn't exist
-                        if (!notNullToken->next.has_value()) {
-                            return;
-                        }
+            // static void RemoveNullTokens(Token* currToken) {
+            //     while (currToken->next.has_value()) {
+            //         Box<Token> notNullToken = std::move(currToken->next.value());
+            //         // To 1st non-null-token
+            //         // While next token is null-token
+            //         while (!notNullToken->type.has_value()) {
+            //             // If `next` doesn't exist
+            //             if (!notNullToken->next.has_value()) {
+            //                 return;
+            //             }
 
-                        notNullToken = std::move(notNullToken->next.value());
-                    }
-                    currToken->next = std::move(notNullToken);
+            //             notNullToken = std::move(notNullToken->next.value());
+            //         }
+            //         currToken->next = std::move(notNullToken);
 
-                    // Continue linking tokens
-                    currToken = currToken->next->get();
-                }
-            }
+            //         // Continue linking tokens
+            //         currToken = currToken->next->get();
+            //     }
+            // }
 
+            TokenType type;
+            Option<Box<Token>> next;
             union {
                     double constant;
                     char variable;
                     char operation;
                     Token* nested;
-            } data;  //
+            } data = {};  //
 
         public:
-            std::optional<TokenType> type = std::nullopt;
-            std::optional<Box<Token>> next = std::nullopt;
             Token(std::string input) {
                 int pos = 0;
                 Token t(input, pos);
@@ -89,19 +99,14 @@ namespace parser {
                 this->data = t.data;
                 this->next = std::move(t.next);
             }
+
             Token(std::string input, int& pos) {
                 std::cout << "call with input = " << input << " and pos = " << pos << std::endl;
                 if (toNextNonSpace(input, pos)) {
                     return;
                 }
 
-                std::cout << "here! pos = " << pos << std::endl;
-                // std::string s = input.substr(pos);
-                std::cout << "here1" << std::endl;
                 char c = input.at(pos);
-                std::cout << "herte2" << std::endl;
-
-                std::cout << "infered C = " << c << std::endl;
 
                 if (IsDigit(c)) {
                     this->type = TokenType::Consant;
@@ -110,13 +115,11 @@ namespace parser {
                     this->type = TokenType::Variable;
                     this->data.variable = c;
                     ++pos;
-                    std::cout << "C is alpha" << std::endl;
 
                 } else if (IsOperation(c)) {
                     this->type = TokenType::Operation;
                     this->data.operation = c;
                     ++pos;
-                    std::cout << "C is operation" << std::endl;
 
                 } else if (IsNestedTokenStart(c)) {
                     this->type = TokenType::NestedToken;
@@ -131,10 +134,8 @@ namespace parser {
                     return;
                 }
 
-                std::cout << "next" << std::endl;
-
                 this->next = NewBox<Token>(input, pos);
-                RemoveNullTokens(this);
+                // RemoveNullTokens(this);
             }
 
             ~Token() {

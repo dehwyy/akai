@@ -31,6 +31,7 @@ find_package(sfml REQUIRED)
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_subdirectory(src/deps/imgui-sfml)
 

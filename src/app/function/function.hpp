@@ -1,18 +1,18 @@
 #pragma once
 #include <cmath>
-#include <optional>
 #include <set>
 #include <string>
 #include <vector>
-#include "../../global/types.hpp"
-#include "variable.hpp"
+#include "lib/prelude.hpp"
+#include "variables.hpp"
 
-using namespace variable;
+using namespace variables;
 
 namespace function {
+
     class Function {
         protected:
-            Box<Function> nested = nullptr;
+            Option<Box<Function>> nested = Option<Box<Function>>::None();
             std::set<std::string> dependantVariables = {};
 
         public:
@@ -20,49 +20,56 @@ namespace function {
             std::set<std::string> GetDependantVariables() const { return dependantVariables; }
 
             virtual ~Function() = default;
-            virtual double GetValue(variable::Variables& variables) const { return 1; };
+            virtual Result<double> GetValue(VariablesContainer& vars) const = 0;
     };
 
-    // class Cos : public Function {
-    //     public:
-    //         double GetValue(variable::Variables& variables) const override {
-    //             return std::cos(this->GetValue(variables));
-    //         }
-    // };
-
-    // class Power : public Function {
-    //     public:
-    //         double GetValue(variable::Variables& variables) const override {
-    //             return std::pow(this->GetValue(variables), this->GetValue(variables));  // ?
-    //         }
-    // };
+    using F = Box<Function>;
 
     class Operation : public Function {
         private:
-            Box<Function> lhs;
-            Box<Function> rhs;
-            char op;
+            Option<Box<Function>> leftFn;
+            Option<Box<Function>> rightFn;
+            char op;  // "+", "-", "*", "/", "^" (TODO)
 
         public:
-            Operation(char op, Box<Function> lhs, Box<Function> rhs)
-                : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {
-                // TODO: merge dependant variables
+            Operation(char op, Box<Function> l, Box<Function> r) : op(op) {
+                std::set_union(l.get()->GetDependantVariables().begin(),
+                               l.get()->GetDependantVariables().end(),
+                               r.get()->GetDependantVariables().begin(),
+                               r.get()->GetDependantVariables().end(),
+                               this->dependantVariables.begin());
+
+                leftFn = Option<F>::Some(std::move(l));
+                rightFn = Option<F>::Some(std::move(r));
             }
 
-            double GetValue(variable::Variables& variables) const override {
-                auto l = this->lhs.get()->GetValue(variables);
-                auto r = this->rhs.get()->GetValue(variables);
+            Result<double> GetValue(VariablesContainer& vars) const override {
+                Result<double> lValue = leftFn.unwrapRef().get()->GetValue(vars);
+                Result<double> rValue = rightFn.unwrapRef().get()->GetValue(vars);
+
+                auto [lv, err] = lValue.unwrapRef();
+                if (err) {
+                    return Result<double>::Err(err);
+                }
+
+                auto [rv, err] = rValue.unwrapRef();
+                if (err) {
+                    return Result<double>::Err(err);
+                }
+
                 switch (this->op) {
                     case '+':
-                        return l + r;
+                        return Result<double>::Ok(lv + rv);
                     case '-':
-                        return l - r;
+                        return Result<double>::Ok(lv - rv);
                     case '*':
-                        return l * r;
+                        return Result<double>::Ok(lv * rv);
                     case '/':
-                        return l / r;
+                        return Result<double>::Ok(lv / rv);
+                    case '^':
+                        return Result<double>::Ok(std::pow(lv, rv));
                     default:
-                        return 1;
+                        return Result<double>::Err("Unknown operation");
                 }
             }
     };
@@ -71,13 +78,15 @@ namespace function {
     class LinearVariable : public Function {
         public:
             LinearVariable(std::string var) { this->dependantVariables.insert(var); }
-            LinearVariable(char var) {
-                std::cout << "this call" << std::endl;
-                this->dependantVariables.insert(std::string(1, var));
-            }
+            LinearVariable(char var) { this->dependantVariables.insert(std::string(1, var)); }
 
-            double GetValue(variable::Variables& variables) const override {
-                return variables.GetVariable(*this->dependantVariables.begin());
+            Result<double> GetValue(VariablesContainer& vars) const override {
+                auto val = vars.get(*this->dependantVariables.begin());
+                if (val.is_none()) {
+                    return Result<double>::Err("Variable not found");
+                }
+
+                return Result<double>::Ok(val.unwrap());
             };
     };
 
@@ -88,6 +97,8 @@ namespace function {
         public:
             Constant(double value) { this->value = value; }
 
-            double GetValue(variable::Variables&) const override { return value; }
+            Result<double> GetValue(VariablesContainer&) const override {
+                return Result<double>::Ok(value);
+            }
     };
 }  // namespace function
