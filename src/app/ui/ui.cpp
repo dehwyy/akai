@@ -3,8 +3,8 @@
 #include <cmath>
 #include <iostream>
 #include <string>
-#include "../../deps/imgui-sfml/imgui.h"
-#include "../function/parser.hpp"
+#include "app/function/parser.hpp"
+#include "deps/imgui-sfml/imgui.h"
 
 using namespace ui;
 
@@ -23,7 +23,7 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
     static float speed = 1;
     static char functionInput[256];
 
-    static variable::Variables vars;
+    static variables::VariablesContainer vars;
 
     if (ImGui::TreeNode("Function")) {
         if (ImGui::InputText("Input", functionInput, 256)) {
@@ -39,14 +39,15 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
 
     // std::cout << "k = " << k << std::endl;
     sf::VertexArray graph(sf::LineStrip);
+    try {
+        auto f = parser::TokensSequence(state.GetFunctionInput()).AsFunction().get();
+        vars.put("z", z);
 
-    auto f = parser::Parser::ParseString(state.GetFunctionInput());
-    vars.SetVariable("z", z);
-
-    if (f.has_value()) {
         for (int x = -WIDTH / 2; x <= WIDTH / 2; ++x) {
-            vars.SetVariable("x", (double)x);
-            float y = f->get()->GetValue(vars);
+            vars.put("x", (double)x);
+
+            std::cout << f << std::endl;
+            auto [y, e] = f->GetValue(vars).unwrapRef();
             std::cout << "Y = " << y << std::endl;
 
             float pixelX = WIDTH / 2 + x;
@@ -60,7 +61,8 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
         }
 
         window.draw(graph);
+    } catch (std::exception& e) {
+        std::cout << "Error: " << e.what() << std::endl;
     }
-
     ImGui::End();
 }

@@ -12,12 +12,10 @@ namespace function {
 
     class Function {
         protected:
-            Option<Box<Function>> nested = Option<Box<Function>>::None();
             std::set<std::string> dependantVariables = {};
 
         public:
-            Function() = default;
-            std::set<std::string> GetDependantVariables() const { return dependantVariables; }
+            std::set<std::string> GetDependantVariables() const { return dependantVariables; };
 
             virtual ~Function() = default;
             virtual Result<double> GetValue(VariablesContainer& vars) const = 0;
@@ -27,29 +25,32 @@ namespace function {
 
     class Operation : public Function {
         private:
-            Option<Box<Function>> leftFn;
-            Option<Box<Function>> rightFn;
+            std::set<std::string> dependantVariables = {};
+            Option<Rc<Function>> leftFn;
+            Option<Rc<Function>> rightFn;
             char op;  // "+", "-", "*", "/", "^" (TODO)
 
         public:
             Operation(char op, Box<Function> l, Box<Function> r) : op(op) {
-                std::set_union(l.get()->GetDependantVariables().begin(),
-                               l.get()->GetDependantVariables().end(),
-                               r.get()->GetDependantVariables().begin(),
-                               r.get()->GetDependantVariables().end(),
-                               this->dependantVariables.begin());
+                for (auto& v : l.get()->GetDependantVariables()) {
+                    dependantVariables.insert(v);
+                }
+                for (auto& v : r.get()->GetDependantVariables()) {
+                    dependantVariables.insert(v);
+                }
 
-                leftFn = Option<F>::Some(std::move(l));
-                rightFn = Option<F>::Some(std::move(r));
+                leftFn = Option<Rc<Function>>::Some(std::move(l));
+                rightFn = Option<Rc<Function>>::Some(std::move(r));
             }
 
             Result<double> GetValue(VariablesContainer& vars) const override {
+                std::cout << "call1" << std::endl;
                 Result<double> lValue = leftFn.unwrapRef().get()->GetValue(vars);
                 Result<double> rValue = rightFn.unwrapRef().get()->GetValue(vars);
-
-                auto [lv, err] = lValue.unwrapRef();
-                if (err) {
-                    return Result<double>::Err(err);
+                std::cout << "call2" << std::endl;
+                auto [lv, err1] = lValue.unwrapRef();
+                if (err1) {
+                    return Result<double>::Err(err1);
                 }
 
                 auto [rv, err] = rValue.unwrapRef();
@@ -76,17 +77,23 @@ namespace function {
 
     /// @brief Only "f(x) = x"
     class LinearVariable : public Function {
+        private:
+            std::string var;
+
         public:
-            LinearVariable(std::string var) { this->dependantVariables.insert(var); }
-            LinearVariable(char var) { this->dependantVariables.insert(std::string(1, var)); }
+            // LinearVariable(std::string var) { this->dependantVariables.insert(var); }
+            LinearVariable(char var) : var(std::string(1, var)) {
+                this->var = std::string(1, var);
+                this->dependantVariables.insert(this->var);
+            }
 
             Result<double> GetValue(VariablesContainer& vars) const override {
-                auto val = vars.get(*this->dependantVariables.begin());
-                if (val.is_none()) {
+                auto value = vars.get(var);
+                if (value.isNone()) {
                     return Result<double>::Err("Variable not found");
                 }
 
-                return Result<double>::Ok(val.unwrap());
+                return Result<double>::Ok(value.unwrap());
             };
     };
 

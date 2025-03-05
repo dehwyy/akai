@@ -25,7 +25,8 @@ class Result {
             return Result<T, E>(*error);
         }
 
-        std::pair<T&, E*> unwrapRef() const { return std::make_pair(value, isError ? &error : nullptr); }
+        T& unwrapRefValue() { return value; }
+        std::pair<T, E*> unwrapRef() { return std::make_pair(value, isError ? &error : nullptr); }
 };
 
 template <typename T>
@@ -35,26 +36,9 @@ class Option {
         bool hasValue = false;
 
     public:
-        Option(T value) : value(value), hasValue(true) {}
-        Option() : value(nullptr), hasValue(false) {}
+        Option(T value) : value(std::move(value)), hasValue(true) {}
+        Option() : hasValue(false) {}
 
-        ~Option() {
-            if (this->hasValue && this->value != nullptr) {
-                delete this->value;
-                this->value = nullptr;
-            }
-        }
-
-        Option(Option&& other) {}
-        Option operator=(Option&& other) {}
-
-        static Option<T> FromPtr(T* value) {
-            if (value == nullptr) {
-                return Option<T>();
-            }
-
-            return Option(value);
-        }
         static Option<T> TryFrom(std::function<T()> callback) {
             try {
                 return Option<T>(callback());
@@ -65,27 +49,41 @@ class Option {
         }
 
         static Option<T> Some(T value) {
-            return value == nullptr ? Option<T>::None() : Option<T>(value);
+            return value == nullptr ? Option<T>::None() : Option<T>(std::move(value));
         }
         static Option<T> None() { return Option<T>(); }
 
+        void set(T value) {
+            hasValue = true;
+            this->value = std::move(value);
+        }
+
         /// @brief Grants non-null value. object cannot be used after this call
         T unwrap() {
-            if (!this->hasValue || this->value == nullptr) {
+            if (!this->hasValue) {
+                throw std::runtime_error("Option has no value");
+            }
+
+            this->hasValue = false;
+            return std::move(value);
+        }
+
+        /// @brief `Unwrap` and set `None`.
+        T unwrapSwap() {
+            auto v = this->unwrap();
+            this->hasValue = false;
+
+            return std::move(v);
+        }
+
+        T unwrapRef() const {
+            if (!this->hasValue) {
                 throw std::runtime_error("Option has no value");
             }
 
             return std::move(value);
         }
 
-        T& unwrapRef() const {
-            if (!this->hasValue || this->value == nullptr) {
-                throw std::runtime_error("Option has no value");
-            }
-
-            return value;
-        }
-
-        bool is_some() const { return this->hasValue && this->value != nullptr; }
-        bool is_none() const { return !this->is_some() }
+        bool isSome() const { return this->hasValue; }
+        bool isNone() const { return !this->isSome(); }
 };
