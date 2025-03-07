@@ -23,7 +23,6 @@ namespace serialize {
             friend class SerializerBuilder;
 
         public:
-            void call() {}
             std::string String() {
                 std::stringstream ss;
 
@@ -43,8 +42,6 @@ namespace serialize {
 
                 ss << "};" << std::endl;
 
-                // auto s = ss.str();
-                // std::cout << s << std::endl;
                 return ss.str();
             }
     };
