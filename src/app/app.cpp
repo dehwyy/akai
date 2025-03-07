@@ -10,8 +10,8 @@ using namespace app;
 using namespace ui;
 
 namespace {
-    const int WIDTH = 640;   // Ширина окна
-    const int HEIGHT = 480;  // Высота окна
+    const int WIDTH = 1280;  // Ширина окна
+    const int HEIGHT = 960;  // Высота окна
     const std::string APP_NAME = "Akai";
     const std::string ICON_FILEPATH = "joker1.jpg";
 }  // namespace

@@ -5,12 +5,13 @@
 #include <string>
 #include "app/function/parser.hpp"
 #include "deps/imgui-sfml/imgui.h"
+#include "lib/prelude.hpp"
 
 using namespace ui;
 
 namespace {
-    const int WIDTH = 640;        // Ширина окна
-    const int HEIGHT = 480;       // Высота окна
+    const int WIDTH = 1280;       // Ширина окна
+    const int HEIGHT = 960;       // Высота окна
     const float SCALE_X = 5.0f;   // Масштаб по X (увеличение)
     const float SCALE_Y = 10.0f;  // Масштаб по Y (увеличение)
 
@@ -22,8 +23,8 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
     static float z = 1;
     static float speed = 1;
     static char functionInput[256];
-
     static variables::VariablesContainer vars;
+    static function::F func;
 
     if (ImGui::TreeNode("Function")) {
         if (ImGui::InputText("Input", functionInput, 256)) {
@@ -35,20 +36,26 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
         ImGui::TreePop();
     }
 
-    std::cout << "Function: " << state.GetFunctionInput() << std::endl;
+    // std::cout << "Function: " << state.GetFunctionInput() << std::endl;
 
     // std::cout << "k = " << k << std::endl;
     sf::VertexArray graph(sf::LineStrip);
     try {
-        auto f = parser::TokensSequence(state.GetFunctionInput()).AsFunction().get();
+        if (state.ShouldRebuildFunction()) {
+            Log::Info("Function recompilation...");
+            state.UpdatePreviousRenderFunctionInput();
+            func = parser::TokensSequence(state.GetFunctionInput()).AsFunction();
+        }
         vars.put("z", z);
+
+        if (!func) {
+            return;
+        }
 
         for (int x = -WIDTH / 2; x <= WIDTH / 2; ++x) {
             vars.put("x", (double)x);
 
-            std::cout << f << std::endl;
-            auto [y, e] = f->GetValue(vars).unwrapRef();
-            std::cout << "Y = " << y << std::endl;
+            auto [y, e] = func->GetValue(vars).unwrapRef();
 
             float pixelX = WIDTH / 2 + x;
             float pixelY = HEIGHT / 2 - y;
@@ -62,7 +69,8 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
 
         window.draw(graph);
     } catch (std::exception& e) {
-        std::cout << "Error: " << e.what() << std::endl;
+        Log::Error("Error: ", e.what());
+        // std::cout << "Error: " << e.what() << std::endl;
     }
     ImGui::End();
 }

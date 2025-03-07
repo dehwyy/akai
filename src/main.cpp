@@ -22,7 +22,7 @@
 using namespace app;
 
 int main(int, char**) {
-    App* app = new App();
-    app->Init();
-    app->Start();
+    App app;
+    app.Init();
+    app.Start();
 }
