@@ -4,7 +4,9 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include "smart_pointers.hpp"
+#include "ptr.hpp"
+
+using namespace ptr;
 
 namespace serialize {
     using V = std::variant<int, double, std::string, bool>;
@@ -31,7 +33,6 @@ namespace serialize {
                 for (auto& [key, value] : content) {
                     std::visit([&ss, &key](const auto& v) { ss << "\t" << '"' << key << "\": " << v; },
                                value);
-                    // ss << "\t" << '"' << key << "\": \"" << value << "\"";
 
                     if (i++ < content.size() - 1) {
                         ss << ",";

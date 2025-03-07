@@ -2,8 +2,9 @@
 #include <cmath>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
-#include "lib/prelude.hpp"
+#include "lib.hpp"
 #include "variables.hpp"
 
 using namespace variables;
@@ -18,7 +19,7 @@ namespace function {
             std::set<std::string> GetDependantVariables() const { return dependantVariables; };
 
             virtual ~Function() = default;
-            virtual Result<double> GetValue(VariablesContainer& vars) const = 0;
+            virtual Result<double> GetValue(const VariablesContainer& vars) const = 0;
     };
 
     using F = Box<Function>;
@@ -31,7 +32,7 @@ namespace function {
             char op;  // "+", "-", "*", "/", "^" (TODO)
 
         public:
-            Operation(char op, Box<Function> l, Box<Function> r) : op(op) {
+            Operation(char op, Box<Function>&& l, Box<Function>&& r) : op(op) {
                 for (auto& v : l->GetDependantVariables()) {
                     dependantVariables.insert(v);
                 }
@@ -43,21 +44,22 @@ namespace function {
                 rightFn = std::move(r);
             }
 
-            Result<double> GetValue(VariablesContainer& vars) const override {
+            Result<double> GetValue(const VariablesContainer& vars) const override {
                 Result<double> lValue = leftFn->GetValue(vars);
                 Result<double> rValue = rightFn->GetValue(vars);
 
-                auto [lv, err1] = lValue.unwrapRef();
+                auto [lv, err1] = lValue.get();
                 if (err1) {
                     return Result<double>::Err(err1);
                 }
 
-                auto [rv, err] = rValue.unwrapRef();
+                auto [rv, err] = rValue.get();
                 if (err) {
                     return Result<double>::Err(err);
                 }
 
                 double r;
+
                 switch (this->op) {
                     case '+':
                         r = lv + rv;
@@ -68,6 +70,10 @@ namespace function {
                         r = lv * rv;
                         break;
                     case '/':
+                        // Log::Print("rv: ", rv, "lv: ", lv);
+                        if (rv == 0) {
+                            return Result<double>::Err("Division by zero");
+                        }
                         r = lv / rv;
                         break;
                     case '^':
@@ -94,7 +100,7 @@ namespace function {
                 this->dependantVariables.insert(this->var);
             }
 
-            Result<double> GetValue(VariablesContainer& vars) const override {
+            Result<double> GetValue(const VariablesContainer& vars) const override {
                 auto value = vars.get(var);
 
                 if (value.isNone()) {
@@ -102,8 +108,7 @@ namespace function {
                     return Result<double>::Err("Variable not found");
                 }
 
-                auto v = value.unwrap();
-                return Result<double>::Ok(v);
+                return Result<double>::Ok(value.unwrap());
             };
     };
 
@@ -114,26 +119,33 @@ namespace function {
         public:
             Constant(double value) { this->value = value; }
 
-            Result<double> GetValue(VariablesContainer&) const override {
+            Result<double> GetValue(const VariablesContainer&) const override {
                 return Result<double>::Ok(value);
             }
     };
 
     class MathFunction : public Function {
         private:
-            const static std::vector<std::string> availableFunctions;
+            const static std::unordered_map<std::string, double (*)(double)> mathFunctions;
             std::string name;
             Box<Function> inner;
 
         public:
-            MathFunction(std::string name, Box<Function> inner) : name(name), inner(std::move(inner)) {}
+            MathFunction(std::string name, Box<Function>&& inner)
+                : name(name), inner(std::move(inner)) {}
 
-            std::vector<std::string> GetAvailableFunctions() const { return availableFunctions; }
+            /// @brief Clarifies whether function with such name exists
+            /// @param name function name
+            bool Exists(std::string name) { return mathFunctions.find(name) != mathFunctions.end(); }
 
-            Result<double> GetValue(VariablesContainer& vars) const override {
-                auto [x, err] = inner->GetValue(vars).unwrapRef();
+            Result<double> GetValue(const VariablesContainer& vars) const override {
+                auto [x, err] = inner->GetValue(vars).get();
+                if (err) {
+                    return Result<double>::Err(err);
+                }
                 double r = 0;
 
+                // TODO: make a hashmap instead: [name: string, function_callback: double(*)(double) ]
                 if (name == "sin") {
                     r = std::sin(x);
                 } else if (name == "cos") {
@@ -160,6 +172,19 @@ namespace function {
             }
     };
 
-    const std::vector<std::string> MathFunction::availableFunctions =
-        {"sin", "cos", "tan", "tg", "sqrt", "exp", "ln", "lg", "abs"};  // TODO: add more
+    const std::unordered_map<std::string, double (*)(double)> MathFunction::mathFunctions = {
+        {"sin", std::sin},
+        {"cos", std::cos},
+        {"tan", std::tan},
+        {"tg", std::tan},
+        {"sqrt", std::sqrt},
+        {"exp", std::exp},
+        {"ln", std::log},
+        {"lg", std::log10},
+        {"abs", std::fabs},
+        {"arctg", std::atan},
+        {"arcsin", std::asin},
+        {"arccos", std::acos},
+        {"arctg", std::atan},
+    };
 }  // namespace function

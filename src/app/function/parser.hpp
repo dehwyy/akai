@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "function.hpp"
-#include "lib/prelude.hpp"
+#include "lib.hpp"
 
 namespace {
     void shiftToNextNonSpace(std::string input, int& pos) {
@@ -155,7 +155,7 @@ namespace parser {
                         // TODO:
                         if (op.isNone()) {
                         }
-                        op.set(ch);
+                        op.set(std::move(ch));
                         pos++;
                         continue;
                     }
@@ -176,9 +176,8 @@ namespace parser {
                         }
 
                         Log::Print("New OperationToken");
-                        lhs.set(
-                            NewBox<OperationToken>(op.unwrapSwap(), lhs.unwrapSwap(), rhs.unwrapSwap()));
-                        // fn.set(Box<OperationToken>(op.unwrapSwap()->with(std::move(fn.unwrap()))));
+                        lhs.set(NewBox<OperationToken>(op.unwrap(), lhs.unwrap(), rhs.unwrap()));
+                        // fn.set(Box<OperationToken>(op.unwrap()->with(std::move(fn.unwrap()))));
                     }
                 }
 
