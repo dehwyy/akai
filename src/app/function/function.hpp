@@ -26,28 +26,27 @@ namespace function {
     class Operation : public Function {
         private:
             std::set<std::string> dependantVariables = {};
-            Option<Rc<Function>> leftFn;
-            Option<Rc<Function>> rightFn;
+            Box<Function> leftFn;
+            Box<Function> rightFn;
             char op;  // "+", "-", "*", "/", "^" (TODO)
 
         public:
             Operation(char op, Box<Function> l, Box<Function> r) : op(op) {
-                for (auto& v : l.get()->GetDependantVariables()) {
+                for (auto& v : l->GetDependantVariables()) {
                     dependantVariables.insert(v);
                 }
-                for (auto& v : r.get()->GetDependantVariables()) {
+                for (auto& v : r->GetDependantVariables()) {
                     dependantVariables.insert(v);
                 }
 
-                leftFn = Option<Rc<Function>>::Some(std::move(l));
-                rightFn = Option<Rc<Function>>::Some(std::move(r));
+                leftFn = std::move(l);
+                rightFn = std::move(r);
             }
 
             Result<double> GetValue(VariablesContainer& vars) const override {
-                std::cout << "call1" << std::endl;
-                Result<double> lValue = leftFn.unwrapRef().get()->GetValue(vars);
-                Result<double> rValue = rightFn.unwrapRef().get()->GetValue(vars);
-                std::cout << "call2" << std::endl;
+                Result<double> lValue = leftFn->GetValue(vars);
+                Result<double> rValue = rightFn->GetValue(vars);
+
                 auto [lv, err1] = lValue.unwrapRef();
                 if (err1) {
                     return Result<double>::Err(err1);
@@ -58,20 +57,27 @@ namespace function {
                     return Result<double>::Err(err);
                 }
 
+                double r;
                 switch (this->op) {
                     case '+':
-                        return Result<double>::Ok(lv + rv);
+                        r = lv + rv;
                     case '-':
-                        return Result<double>::Ok(lv - rv);
+                        r = lv - rv;
+                        break;
                     case '*':
-                        return Result<double>::Ok(lv * rv);
+                        r = lv * rv;
+                        break;
                     case '/':
-                        return Result<double>::Ok(lv / rv);
+                        r = lv / rv;
+                        break;
                     case '^':
-                        return Result<double>::Ok(std::pow(lv, rv));
+                        r = std::pow(lv, rv);
+                        break;
                     default:
                         return Result<double>::Err("Unknown operation");
                 }
+
+                return Result<double>::Ok(r);
             }
     };
 
@@ -83,17 +89,21 @@ namespace function {
         public:
             // LinearVariable(std::string var) { this->dependantVariables.insert(var); }
             LinearVariable(char var) : var(std::string(1, var)) {
+                // Log::Print("var constructor");
                 this->var = std::string(1, var);
                 this->dependantVariables.insert(this->var);
             }
 
             Result<double> GetValue(VariablesContainer& vars) const override {
                 auto value = vars.get(var);
+
                 if (value.isNone()) {
+                    Log::Warn("Value: None");
                     return Result<double>::Err("Variable not found");
                 }
 
-                return Result<double>::Ok(value.unwrap());
+                auto v = value.unwrap();
+                return Result<double>::Ok(v);
             };
     };
 
@@ -108,4 +118,48 @@ namespace function {
                 return Result<double>::Ok(value);
             }
     };
+
+    class MathFunction : public Function {
+        private:
+            const static std::vector<std::string> availableFunctions;
+            std::string name;
+            Box<Function> inner;
+
+        public:
+            MathFunction(std::string name, Box<Function> inner) : name(name), inner(std::move(inner)) {}
+
+            std::vector<std::string> GetAvailableFunctions() const { return availableFunctions; }
+
+            Result<double> GetValue(VariablesContainer& vars) const override {
+                auto [x, err] = inner->GetValue(vars).unwrapRef();
+                double r = 0;
+
+                if (name == "sin") {
+                    r = std::sin(x);
+                } else if (name == "cos") {
+                    r = std::cos(x);
+                } else if (name == "tan") {
+                    r = std::tan(x);
+                } else if (name == "tg") {
+                    r = std::tan(x);
+                } else if (name == "sqrt") {
+                    r = std::sqrt(x);
+                } else if (name == "exp") {
+                    r = std::exp(x);
+                } else if (name == "ln") {
+                    r = std::log(x);
+                } else if (name == "lg") {
+                    r = std::log10(x);
+                } else if (name == "abs") {
+                    r = std::fabs(x);
+                } else {
+                    return Result<double>::Err("Unknown function");
+                }
+
+                return Result<double>::Ok(r);
+            }
+    };
+
+    const std::vector<std::string> MathFunction::availableFunctions =
+        {"sin", "cos", "tan", "tg", "sqrt", "exp", "ln", "lg", "abs"};  // TODO: add more
 }  // namespace function
