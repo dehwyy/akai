@@ -17,10 +17,10 @@ namespace option {
             bool hasValue = false;
 
         public:
-            Option(T value) : value(std::move(value)), hasValue(true) {}
+            explicit Option(T&& value) : value(std::forward<T>(value)), hasValue(true) {}
             Option() : hasValue(false) {}
 
-            static Option<T> Some(T&& value) { return Option<T>(std::move(value)); }
+            static Option<T> Some(T&& value) { return Option<T>(std::forward<T>(value)); }
             static Option<T> None() { return Option<T>(); }
 
             bool isSome() const { return this->hasValue; }
@@ -28,9 +28,12 @@ namespace option {
 
             void set(T&& newValue) {
                 hasValue = true;
-                value = std::move(newValue);
+                value = std::forward<T>(newValue);
             }
 
+            /// @brief Unwraps inner value. Consumers Self.
+            /// @throws std::runtime_error if Self has no value.
+            /// @return <T> inner value.
             T unwrap() {
                 if (!this->hasValue) {
                     throw std::runtime_error("Option has no value");
@@ -41,7 +44,7 @@ namespace option {
             }
 
             /// @brief Tries to unwrap inner value. Doesn't consume Self.
-            /// @returns <T> or throws an exception.
+            /// @returns <T> inner value.
             /// @throws std::runtime_error if Self has no value.
             /// @throws std::invalid_argument if <T> is not copyable.
             /// @note <Self> can be used after.
@@ -78,7 +81,7 @@ namespace result {
         public:
             template <std::enable_if_t<std::is_move_constructible_v<T>, int> = 0>
             static Result<T, E> Ok(T&& value) {
-                return Result<T, E>(std::move(value));
+                return Result<T, E>(std::forward<T>(value));
             }
 
             template <std::enable_if_t<std::is_copy_constructible_v<T>, int> = 0>
@@ -97,6 +100,13 @@ namespace result {
 
             /// Returns copy of underlying value.
             /// @returns std::pair<T, E*>
-            std::pair<T, E*> get() { return std::make_pair(value, isError ? &error : nullptr); }
+            /// @throws std::invalid_argument if <T> is not copyable
+            std::pair<T, E*> get() {
+                if constexpr (!std::is_copy_constructible_v<T>) {
+                    throw std::invalid_argument("<T> is not copyable");
+                }
+
+                return std::make_pair(std::move(value), isError ? &error : nullptr);
+            }
     };
 }  // namespace result
