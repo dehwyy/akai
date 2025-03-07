@@ -3,7 +3,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "lib/prelude.hpp"
+#include "lib.hpp"
+
+using namespace logger;
 
 namespace variables {
     class VariablesContainer : public serialize::Serializable {
@@ -11,15 +13,21 @@ namespace variables {
             std::unordered_map<std::string, double> variables;
 
         public:
-            VariablesContainer() { std::cout << "VariablesContainer created" << std::endl; }
-            ~VariablesContainer() { std::cout << "VariablesContainer destroyed" << std::endl; }
+            VariablesContainer() { Log::Trace("VariablesContainer()"); }
+            ~VariablesContainer() { Log::Trace("~VariablesContainer()"); }
 
             void put(std::string name, double value) {
-                Log::Trace("name: ", name, " value: ", value);
+                Log::Trace("VariablesContainer::put(name, value), name='", name, "', value=", value);
                 variables.insert_or_assign(name, value);
             }
-            Option<double> get(std::string name) {
-                return Option<double>::TryFrom([this, &name]() { return variables.at(name); });
+            Option<double> get(std::string name) const {
+                try {
+                    // TODO: make inline?
+                    double varValue = variables.at(name);
+                    return Option<double>::Some(std::move(varValue));
+                } catch (const std::out_of_range& e) {
+                    return Option<double>::None();
+                }
             }
 
             std::string String() override {

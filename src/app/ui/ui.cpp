@@ -5,9 +5,10 @@
 #include <string>
 #include "app/function/parser.hpp"
 #include "deps/imgui-sfml/imgui.h"
-#include "lib/prelude.hpp"
+#include "lib.hpp"
 
 using namespace ui;
+using namespace logger;
 
 namespace {
     const int WIDTH = 1280;       // Ширина окна
@@ -36,9 +37,6 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
         ImGui::TreePop();
     }
 
-    // std::cout << "Function: " << state.GetFunctionInput() << std::endl;
-
-    // std::cout << "k = " << k << std::endl;
     sf::VertexArray graph(sf::LineStrip);
     try {
         if (state.ShouldRebuildFunction()) {
@@ -52,10 +50,14 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
             return;
         }
 
-        for (int x = -WIDTH / 2; x <= WIDTH / 2; ++x) {
-            vars.put("x", (double)x);
+        for (int x = -WIDTH / 2 * 100; x <= WIDTH / 2 * 100; ++x) {
+            vars.put("x", (double)x / 100);
 
-            auto [y, e] = func->GetValue(vars).unwrapRef();
+            auto [y, e] = func->GetValue(vars).get();
+            if (e) {
+                Log::Error("Error: ", *e, " X = ", x);
+                continue;
+            }
 
             float pixelX = WIDTH / 2 + x;
             float pixelY = HEIGHT / 2 - y;
