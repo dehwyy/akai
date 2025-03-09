@@ -1,20 +1,21 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <string>
+#include "config.hpp"
+#include "lib.hpp"
 
 namespace app {
     class App {
         private:
-            sf::RenderWindow* window;
+            Rc<sf::RenderWindow> window;
 
-            void loadIcon();
-            void initImGUI();
+            void loadIcon(const std::string& filepath);
 
         public:
-            App();
+            App(const config::Config& config);
             ~App();
 
-            void Init();
-            void Start();
+            void start();
     };
 }  // namespace app

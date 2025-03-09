@@ -7,9 +7,9 @@ project(Akai)
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/logger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.cpp
 
 )
 
@@ -33,7 +33,8 @@ find_package(sfml REQUIRED)
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/app)
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/app)
 add_subdirectory(src/deps/imgui-sfml)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml  imgui-sfml)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml imgui-sfml)

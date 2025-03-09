@@ -21,6 +21,12 @@ namespace {
 namespace config {
     class Config {
         private:
+            int windowWidth = 1280;
+            int windowHeight = 960;
+            std::string windowTitle = "Akai";
+            std::string iconFilepath = "assets/icon.png";
+            int FPSLimit = 60;
+
             logger::LogLevel logLevel = logger::LogLevel::Print;
 
             void setLogLevel(std::string level) {
@@ -52,6 +58,12 @@ namespace config {
                 }
             }
 
-            logger::LogLevel getLogLevel() { return logLevel; }
+            logger::LogLevel getLogLevel() const { return logLevel; }
+
+            int getWindowWidth() const { return windowWidth; }
+            int getWindowHeight() const { return windowHeight; }
+            std::string getWindowTitle() const { return windowTitle; }
+            std::string getIconFilepath() const { return iconFilepath; }
+            int getFPSLimit() const { return FPSLimit; }
     };
 }  // namespace config

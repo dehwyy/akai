@@ -9,51 +9,33 @@
 using namespace app;
 using namespace ui;
 
-namespace {
-    const int WIDTH = 1280;  // Ширина окна
-    const int HEIGHT = 960;  // Высота окна
-    const std::string APP_NAME = "Akai";
-    const std::string ICON_FILEPATH = "joker1.jpg";
-}  // namespace
+App::App(const config::Config& config) {
+    window = NewRc<sf::RenderWindow>(sf::VideoMode(config.getWindowWidth(), config.getWindowHeight()),
+                                     config.getWindowTitle());
 
-App::App() {
-    window = new sf::RenderWindow(sf::VideoMode(WIDTH, HEIGHT), APP_NAME);
+    window->setFramerateLimit(60);
+    this->loadIcon(config.getIconFilepath());
+    if (!ImGui::SFML::Init(*window)) {
+        exit(1);
+    }
+    ImGui::Spectrum::StyleColorsSpectrum();
 }
 
 App::~App() {
-    delete window;
     ImGui::SFML::Shutdown();
 }
 
-void App::loadIcon() {
+void App::loadIcon(const std::string& filepath) {
     sf::Image appIcon;
-    appIcon.loadFromFile(ICON_FILEPATH);
+    appIcon.loadFromFile(filepath);
     auto [iconWidth, iconHeight] = appIcon.getSize();
     window->setIcon(iconWidth, iconHeight, appIcon.getPixelsPtr());
 }
 
-void App::initImGUI() {
-    if (!ImGui::SFML::Init(*window)) {
-        delete window;
-        exit(1);
-    }
-
-    ImGui::Spectrum::StyleColorsSpectrum();
-}
-
-void App::Init() {
-    window->setFramerateLimit(60);
-
-    this->initImGUI();
-    this->loadIcon();
-}
-
-void App::Start() {
+void App::start() {
     sf::Clock deltaClock;
-    state::State state;
-    // unsigned counter = 0;
+    static state::State state;
     while (window->isOpen()) {
-        // counter++;
         sf::Event event;
         while (window->pollEvent(event)) {
             ImGui::SFML::ProcessEvent(*window, event);
@@ -65,8 +47,7 @@ void App::Start() {
 
         window->clear(sf::Color::Transparent);
 
-        // UI
-        UI::Render(*window, state);
+        UI::Render(window, state);
 
         ImGui::SFML::Render(*window);
         window->display();
