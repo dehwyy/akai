@@ -30,6 +30,7 @@ namespace option {
                 hasValue = true;
                 value = std::forward<T>(newValue);
             }
+            void reset() { hasValue = false; }
 
             /// @brief Unwraps inner value. Consumers Self.
             /// @throws std::runtime_error if Self has no value.

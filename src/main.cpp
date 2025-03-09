@@ -27,7 +27,6 @@ int main(int argc, char** argv) {
     config::Config config(argc, argv);
     logger::Log::SetLogLevel(config.getLogLevel());
 
-    App app;
-    app.Init();
-    app.Start();
+    App app(config);
+    app.start();
 }

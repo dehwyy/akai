@@ -30,6 +30,8 @@ namespace variables {
                 }
             }
 
+            bool exists(std::string name) const { return variables.find(name) != variables.end(); }
+
             std::string String() override {
                 auto ser = serialize::SerializerBuilder().withTitle("VariablesContainer");
                 for (auto& [key, value] : variables) {
@@ -38,5 +40,8 @@ namespace variables {
 
                 return ser->build()->String();
             }
+
+            auto begin() { return variables.begin(); }
+            auto end() { return variables.end(); }
     };
 }  // namespace variables
