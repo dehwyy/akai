@@ -7,9 +7,10 @@ namespace logger {
 
     class Log {
         private:
-            const static LogLevel LOG_LEVEL = LogLevel::Warning;
-
         public:
+            static logger::LogLevel LOG_LEVEL;
+            static void SetLogLevel(LogLevel level) { LOG_LEVEL = level; }
+
             template <typename... Args>
             static void Error(Args... args) {
                 (std::cerr << ... << args) << std::endl;

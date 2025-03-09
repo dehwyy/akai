@@ -9,6 +9,8 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/logger.cpp
+
 )
 
 set(HEADERS
