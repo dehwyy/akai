@@ -63,6 +63,7 @@ namespace function {
                 switch (this->op) {
                     case '+':
                         r = lv + rv;
+                        break;
                     case '-':
                         r = lv - rv;
                         break;
