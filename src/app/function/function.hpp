@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <functional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -71,7 +72,6 @@ namespace function {
                         r = lv * rv;
                         break;
                     case '/':
-                        // Log::Print("rv: ", rv, "lv: ", lv);
                         if (rv == 0) {
                             return Result<double>::Err("Division by zero");
                         }
@@ -105,7 +105,7 @@ namespace function {
                 auto value = vars.get(var);
 
                 if (value.isNone()) {
-                    Log::Warn("Value: None");
+                    // Log::Warn("Value: None");
                     return Result<double>::Err("Variable not found");
                 }
 
@@ -137,55 +137,65 @@ namespace function {
 
             /// @brief Clarifies whether function with such name exists
             /// @param name function name
-            bool Exists(std::string name) { return mathFunctions.find(name) != mathFunctions.end(); }
+            static bool Exists(std::string name) {
+                return mathFunctions.find(name) != mathFunctions.end();
+            }
 
             Result<double> GetValue(const VariablesContainer& vars) const override {
+                if (!Exists(name)) {
+                    return Result<double>::Err("Unknown function");
+                }
+
                 auto [x, err] = inner->GetValue(vars).get();
                 if (err) {
                     return Result<double>::Err(err);
                 }
+
                 double r = 0;
+                std::function<double(double)> f = mathFunctions.at(name);
 
-                // TODO: make a hashmap instead: [name: string, function_callback: double(*)(double) ]
-                if (name == "sin") {
-                    r = std::sin(x);
-                } else if (name == "cos") {
-                    r = std::cos(x);
-                } else if (name == "tan") {
-                    r = std::tan(x);
-                } else if (name == "tg") {
-                    r = std::tan(x);
-                } else if (name == "sqrt") {
-                    r = std::sqrt(x);
-                } else if (name == "exp") {
-                    r = std::exp(x);
-                } else if (name == "ln") {
-                    r = std::log(x);
-                } else if (name == "lg") {
-                    r = std::log10(x);
-                } else if (name == "abs") {
-                    r = std::fabs(x);
-                } else {
-                    return Result<double>::Err("Unknown function");
-                }
-
-                return Result<double>::Ok(r);
+                return Result<double>::Ok(f(x));
             }
     };
 
     const std::unordered_map<std::string, double (*)(double)> MathFunction::mathFunctions = {
         {"sin", std::sin},
+        {"arcsin", std::asin},
+        {"sinh", std::sinh},
+        {"arcsinh", std::asinh},
+
+        {"cosh", std::cosh},
         {"cos", std::cos},
+        {"arccos", std::acos},
+        {"arccosh", std::acosh},
+
         {"tan", std::tan},
         {"tg", std::tan},
+        {"tanh", std::tanh},
+        {"tgh", std::tanh},
+        {"arctg", std::atan},
+        {"arctan", std::atan},
+        {"arctanh", std::atanh},
+        {"arctgh", std::atanh},
+
+        {"cot", [](double v) { return 1 / std::tan(v); }},
+        {"ctg", [](double v) { return 1 / std::tan(v); }},
+        {"arccot", [](double v) { return std::atan(1 / v); }},
+        {"arcctg", [](double v) { return std::atan(1 / v); }},
+
+        {"sec", [](double v) { return 1 / std::cos(v); }},
+        {"arcsec", [](double v) { return std::acos(1 / v); }},
+
+        {"csc", [](double v) { return 1 / std::sin(v); }},
+        {"arccsc", [](double v) { return std::asin(1 / v); }},
+
         {"sqrt", std::sqrt},
         {"exp", std::exp},
         {"ln", std::log},
+        {"log", std::log},
         {"lg", std::log10},
         {"abs", std::fabs},
-        {"arctg", std::atan},
-        {"arcsin", std::asin},
-        {"arccos", std::acos},
-        {"arctg", std::atan},
+        {"floor", std::floor},
+        {"ceil", std::ceil},
     };
 }  // namespace function

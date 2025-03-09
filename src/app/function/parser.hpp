@@ -61,6 +61,21 @@ namespace parser {
             MathFunctionToken(std::string name, Box<IntoFunction> inner)
                 : name(name), inner(std::move(inner)) {}
 
+            static std::string Extract(const std::string& s, int& pos) {
+                int startPos = pos;
+                std::string fn = {s.at(pos++)};
+                while (!function::MathFunction::Exists(fn)) {
+                    if (pos >= s.length()) {
+                        pos = startPos;
+                        return "";
+                    }
+
+                    fn += s.at(pos++);
+                }
+
+                return fn;
+            }
+
             Box<function::Function> AsFunction() override {
                 return NewBox<function::MathFunction>(name, inner->AsFunction());
             }
@@ -129,19 +144,31 @@ namespace parser {
                     shiftToNextNonSpace(s, pos);
 
                     char ch = s.at(pos);
+                    std::string mathFn = "";
 
                     // Parse as number
                     if (ConstantToken::Matches(ch)) {
-                        Log::Print("New const token");
+                        Log::Trace("New const token");
                         if (op.isNone()) {
                             lhs.set(NewBox<ConstantToken>(s, pos));
                         } else {
                             rhs.set(NewBox<ConstantToken>(s, pos));
                         }
                     }
+                    // Parse as math function
+                    else if ((mathFn = MathFunctionToken::Extract(s, pos)).length() > 0) {
+                        Log::Trace("New math function token");
+                        if (op.isNone()) {
+                            lhs.set(NewBox<MathFunctionToken>(
+                                mathFn, NewBox<TokensSequence>(TokensSequence::Extract(s, pos))));
+                        } else {
+                            rhs.set(NewBox<MathFunctionToken>(
+                                mathFn, NewBox<TokensSequence>(TokensSequence::Extract(s, pos))));
+                        }
+                    }
                     // Parse as variable
                     else if (VariableToken::Matches(ch)) {
-                        Log::Print("New variable token");
+                        Log::Trace("New variable token");
                         if (op.isNone()) {
                             lhs.set(NewBox<VariableToken>(ch));
                         } else {
@@ -151,7 +178,7 @@ namespace parser {
                     }
                     // Parse as operation
                     else if (OperationToken::Matches(ch)) {
-                        Log::Print("New operation token");
+                        Log::Trace("New operation token");
                         // TODO:
                         if (op.isNone()) {
                         }
@@ -161,7 +188,7 @@ namespace parser {
                     }
                     // Parse as nested token
                     else if (TokensSequence::Matches(ch)) {
-                        Log::Print("New nested TokensSequence");
+                        Log::Trace("New nested TokensSequence");
 
                         if (op.isNone()) {
                             lhs.set(NewBox<TokensSequence>(TokensSequence::Extract(s, pos)));
@@ -175,7 +202,7 @@ namespace parser {
                             lhs.set(NewBox<ConstantToken>(0.));
                         }
 
-                        Log::Print("New OperationToken");
+                        Log::Trace("New OperationToken");
                         lhs.set(NewBox<OperationToken>(op.unwrap(), lhs.unwrap(), rhs.unwrap()));
                         // fn.set(Box<OperationToken>(op.unwrap()->with(std::move(fn.unwrap()))));
                     }

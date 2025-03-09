@@ -50,12 +50,12 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
             return;
         }
 
-        for (int x = -WIDTH / 2 * 100; x <= WIDTH / 2 * 100; ++x) {
-            vars.put("x", (double)x / 100);
+        for (int x = -WIDTH / 2; x <= WIDTH / 2; ++x) {
+            vars.put("x", (double)x);
 
             auto [y, e] = func->GetValue(vars).get();
             if (e) {
-                Log::Error("Error: ", *e, " X = ", x);
+                // Log::Error("Error: ", *e, " X = ", x);
                 continue;
             }
 
@@ -71,8 +71,7 @@ void UI::Render(sf::RenderWindow& window, state::State& state) {
 
         window.draw(graph);
     } catch (std::exception& e) {
-        Log::Error("Error: ", e.what());
-        // std::cout << "Error: " << e.what() << std::endl;
+        // Log::Error("Error: ", e.what());
     }
     ImGui::End();
 }
