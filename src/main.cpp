@@ -18,10 +18,15 @@
 // }
 
 #include "app/app.hpp"
+#include "config.hpp"
+#include "lib/logger.hpp"
 
 using namespace app;
 
-int main(int, char**) {
+int main(int argc, char** argv) {
+    config::Config config(argc, argv);
+    logger::Log::SetLogLevel(config.getLogLevel());
+
     App app;
     app.Init();
     app.Start();
