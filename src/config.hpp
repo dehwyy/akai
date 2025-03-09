@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "lib/logger.hpp"
+#include "lib.hpp"
 
 namespace {
     std::string parse(char* str, std::vector<std::string> aliases) {
@@ -40,7 +40,7 @@ namespace config {
                     logLevel = logger::LogLevel::Trace;
                 }
             }
-            void setLogLevel(int level) { logLevel = static_cast<logger::LogLevel>(level); }
+            void setLogLevel(int level) { logLevel = To<logger::LogLevel>(level); }
 
         public:
             Config(int argc, char** argv) {
