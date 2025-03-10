@@ -12,7 +12,7 @@
 ### Building
 ```sh
 mkdir build                                                                           #
-conan install . --output-folder=build --build=missing -s compiler.libcxx=libstdc++11  # install conan deps
+conan install . --output-folder=build --build=missing                                 # install conan deps
 cd build && cmake ..                                                                  # init CMake
 cmake --build build                                                                   # build
 ./build/<output.file>                                                                 # run app
