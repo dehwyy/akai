@@ -3,7 +3,6 @@
 #include "lib/enum.hpp"
 #include "lib/logger.hpp"
 #include "lib/ptr.hpp"
-#include "lib/serialize.hpp"
 #include "lib/utils.hpp"
 
 // Standart library
