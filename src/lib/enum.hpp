@@ -98,6 +98,23 @@ namespace result {
 
                 return Result<T, E>(*error);
             }
+            static Result<T, E> Err(E error) { return Result<T, E>(error); }
+
+            bool ok() const { return !isError; }
+
+            bool is_err() const { return isError; }
+
+            T unwrap() const {
+                if (isError)
+                    throw std::runtime_error("Called unwrap on Err: " + error);
+                return value;
+            }
+
+            E unwrap_err() const {
+                if (!isError)
+                    throw std::runtime_error("Called unwrap_err on Ok");
+                return error;
+            }
 
             /// Returns copy of underlying value.
             /// @returns std::pair<T, E*>
