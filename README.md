@@ -5,16 +5,14 @@
 
 ### Requirements:
 
-- [Conan](https://conan.io)
 - CMake
 - Any C++ compiler
 
 ### Building
 ```sh
-mkdir build                                                                           #
-conan install . --output-folder=build --build=missing                                 # install conan deps
+mkdir build                                                                           # build dir
 cd build && cmake ..                                                                  # init CMake
-cmake --build build                                                                   # build
+cmake --build .                                                                       # build proj
 ./build/<output.file>                                                                 # run app
 ```
 

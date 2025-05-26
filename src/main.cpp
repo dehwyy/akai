@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <map>
 #include <optional>
 #include <regex>
@@ -25,7 +26,7 @@ struct VariableState {
         bool animated = false;
         float min = 0.0f;
         float max = 2.0f;
-        float period = 2.0f;  // seconds
+        float period = 2.0f;
 };
 
 float xMin = -10.f;
@@ -41,7 +42,6 @@ std::unordered_map<std::string, VariableState> globalVariables;
 
 float currentTime = 0.0f;
 
-// Извлекаем переменные из выражения с помощью regex
 std::set<std::string> extractVariables(const std::string& expr) {
     std::set<std::string> vars;
     std::regex re(R"(\b([a-zA-Z_][a-zA-Z0-9_]*)\b)");
@@ -112,20 +112,32 @@ void drawGrid(sf::RenderWindow& window, unsigned width, unsigned height) {
 }
 
 void handleControls(unsigned width, unsigned height) {
-    ImGui::Begin("Graph Settings");
+    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Graph Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
     static char expr_buf[256] = "";
-    ImGui::InputText("Add expression f(x)", expr_buf, sizeof(expr_buf));
+    static char var_buf[64] = "k";
+
+    ImGui::InputText("Function", expr_buf, sizeof(expr_buf));
     ImGui::SameLine();
     if (ImGui::Button("Add graph")) {
         if (strlen(expr_buf) > 0) {
+            std::string full_expr = expr_buf;
+            if (strlen(var_buf) > 0) {
+                full_expr = full_expr + "*" + var_buf;
+            }
+
             std::map<std::string, float> vars = {{"x", 0.f}};
-            auto res = parse_and_eval(expr_buf, vars);
+            if (strlen(var_buf) > 0) {
+                vars[var_buf] = 1.0f;
+            }
+
+            auto res = parse_and_eval(full_expr, vars);
             if (res.ok()) {
                 Graph g;
-                g.expression = expr_buf;
+                g.expression = full_expr;
                 g.color = graphColor;
-                g.variables = extractVariables(expr_buf);
+                g.variables = extractVariables(full_expr);
                 for (const auto& var : g.variables) {
                     globalVariables.try_emplace(var, VariableState{});
                 }
@@ -136,6 +148,8 @@ void handleControls(unsigned width, unsigned height) {
             }
         }
     }
+
+    ImGui::InputText("Parameter", var_buf, sizeof(var_buf));
 
     if (ImGui::BeginPopup("Error")) {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Invalid expression!");
@@ -260,7 +274,7 @@ void handleControls(unsigned width, unsigned height) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Akai");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Akai", sf::Style::Default);
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
 
@@ -275,9 +289,8 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
             else if (event.type == sf::Event::Resized) {
-                sf::View view = window.getView();
-                view.setSize(event.size.width, event.size.height);
-                window.setView(view);
+                sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+                window.setView(sf::View(visibleArea));
             }
         }
 
