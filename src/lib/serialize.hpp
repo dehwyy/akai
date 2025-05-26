@@ -1,6 +1,7 @@
 #pragma once
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <unordered_map>
 #include <variant>
 #include <vector>
