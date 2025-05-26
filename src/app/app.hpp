@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <string>
-#include "config.hpp"
+#include "cfg.hpp"
 #include "lib.hpp"
 
 namespace app {
