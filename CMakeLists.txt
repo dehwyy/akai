@@ -8,20 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Пути к исходникам
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/parser.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.cpp
 )
 
 set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/parser.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/variables.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/state/state.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.hpp
 )
 
 # Указать путь к SFML CMake-модулям (важно!)
