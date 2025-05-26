@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
-
 set(p "imgui-sfml")
-project(p)
+project(${p})
 
 set(${p}_SOURCES
   imgui.cpp
@@ -23,9 +22,14 @@ set(${p}_HEADERS
   imgui_spectrum.h
 )
 
-find_package(sfml REQUIRED)
-# find_package(imgui REQUIRED)
+
+
+# Пути к SFML (ты указываешь вручную — допустимо, но лучше через find_package, если возможно)
+include_directories(/opt/homebrew/Cellar/sfml@2/2.6.2_1/include)
+link_directories(/opt/homebrew/Cellar/sfml@2/2.6.2_1/lib)
 
 add_library(${p} STATIC ${${p}_SOURCES} ${${p}_HEADERS})
 
-target_link_libraries(${p} PRIVATE sfml::sfml)
+# 💡 Добавляем OpenGL.framework
+find_library(OPENGL_LIBRARY OpenGL)
+target_link_libraries(${p} PRIVATE sfml-graphics sfml-window sfml-system ${OPENGL_LIBRARY})

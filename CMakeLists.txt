@@ -2,15 +2,16 @@ cmake_minimum_required(VERSION 3.20)
 
 project(Akai)
 
-# set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Пути к исходникам
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.cpp
-
 )
 
 set(HEADERS
@@ -22,19 +23,23 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.hpp
 )
 
-include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+# Указать путь к SFML CMake-модулям (важно!)
+set(SFML_DIR "/opt/homebrew/Cellar/sfml@2/2.6.2_1/lib/cmake/SFML")
 
-find_package(nlohmann_json REQUIRED)
-find_package(sfml REQUIRED)
-# find_package(imgui REQUIRED)
+find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
 
-
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
-set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
-
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/app)
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/app)
 add_subdirectory(src/deps/imgui-sfml)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json sfml::sfml imgui-sfml)
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app
+)
+
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+    imgui-sfml
+    sfml-graphics
+    sfml-window
+    sfml-system
+)

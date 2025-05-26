@@ -6,7 +6,7 @@ class ImGuiConan(ConanFile):
     settings = "os", "compiler", "build_type"
     requires = [
         "nlohmann_json/3.11.3",
-        "sfml/2.6.2",
+        # "sfml/2.6.2",
         # "imgui/1.89.9",
         # "imgui-sfml/2.5@bincrafters/stable"
     ]
