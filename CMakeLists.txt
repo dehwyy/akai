@@ -11,6 +11,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/ui/ui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/logger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/parser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/function/function.cpp
 )
 
