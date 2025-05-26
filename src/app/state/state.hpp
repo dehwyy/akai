@@ -38,9 +38,9 @@ namespace state {
                 if (shouldRebuildFunction()) {
                     updatePreviousRenderFunctionInput();
                     try {
-                        function::F f = parser::TokensSequence(functionInput).AsFunction();
-                        updateFunctionVariablesDefinition(f->GetDependantVariables());
-                        function.set(std::move(f));
+                        // function::F f = parser::TokensSequence(functionInput).AsFunction();
+                        // updateFunctionVariablesDefinition(f->GetDependantVariables());
+                        // function.set(std::move(f));
 
                     } catch (const std::exception& e) {
                         // Log::Error(e.what());
